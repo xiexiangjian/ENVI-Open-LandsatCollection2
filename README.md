@@ -3,6 +3,7 @@ A small plug-in developed based on ENVI5.3/IDL8.5 to open Landsat Collection2 Le
 
 # 工具中文说明
 背景：临近毕业，有不少同学咨询Landsat Collection2 Level 2 数据在ENVI中打不开的问题，为方便大家，编写并分享此工具。
+下载：https://github.com/xiexjrs/ENVI_Read_MTL_json.git
 
 ## 工具介绍	
 1. 功能：
@@ -17,7 +18,7 @@ A small plug-in developed based on ENVI5.3/IDL8.5 to open Landsat Collection2 Le
 	将压缩包中的read_mtl_json.sav文件拷贝到ENVI安装目录下extensions文件夹中即可。
 2. 使用：
 	拷贝完成后，重启ENVI，双击右下角Read MTL_json;
-	在弹出对话框中，选择数据目录下的*_MTL.json文件（如LC08_L2SP_129044_20150104_20200910_02_T1_MTL.json）
+	在弹出对话框中，选择数据目录下的_MTL.json文件（如LC08_L2SP_129044_20150104_20200910_02_T1_MTL.json）
 	如果没报错，工具自动加载缩放后的地表反射率影像集、地表温度和QA_Pixel质量影像
 3. 免责声明：
 	本工具基于ENVI8.3/IDL8.5二次开发，不能保证与所有的软硬件系统完全兼容，在使用过程中遇到报错，可联系xiexj@ecut.edu.cn。
