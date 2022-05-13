@@ -48,15 +48,23 @@ pro Read_MTL_json
   ;jsonFile='D:\Experiment\temp\LC08_C2L2\LC08_L2SP_129044_20150104_20200910_02_T1_MTL.json'
 
   LCC2_Obj = LCC2(jsonFile)
+  
+   ;; Load Multispectral Imagery (加载多光谱影像)
   InputRaster = LCC2_Obj.load('Multispectral')
-  outRaster = LCC2_Obj.Scaling()  
+  ; Restore the image to the real surface reflectance (0-1)
+  ;   (scaling:将影像缩放还原为真实地表反射率(0-1))
+  outRaster = LCC2_Obj.Scaling()  ;
   DataColl.add,outRaster
   Layer = View.CreateLayer(outRaster)
   
-  InputRaster = LCC2_Obj.load('Temperature')
+  ;; Loading surface temperature images (加载地表温度影像)
+  InputRaster = LCC2_Obj.load('Temperature')  
+  ; Restore the image to surface temperature (°C)
+  ;   (scaling:将影像缩放还原为真实地表温度(℃))
   outRaster = LCC2_Obj.Scaling()
   ;Layer = View.CreateLayer(outRaster)
-  
+
+  ;; Load quality images (加载QA质量影像)
   InputRaster = LCC2_Obj.load('QA_Pixel')
   ;InputRaster = LCC2_Obj.load('ST_QA')
 end

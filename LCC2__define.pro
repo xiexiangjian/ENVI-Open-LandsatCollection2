@@ -140,7 +140,7 @@ end
 ; :Description:
 ;    Describe the procedure.
 ;     Restore the image to the real surface reflectance (0-1) or surface temperature (°C)
-;       (scaling:将影像缩放还原为真是地表反射率(0-1)或地表温度(℃))
+;       (scaling:将影像缩放还原为真实地表反射率(0-1)或地表温度(℃))
 ; :Params:
 ;    LCC2::Scaling
 ; :args:
