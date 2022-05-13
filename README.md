@@ -6,13 +6,16 @@ A small plug-in developed based on ENVI5.3/IDL8.5 to open Landsat Collection2 Le
 
 插件下载：https://github.com/xiexjrs/ENVI_Read_MTL_json/blob/main/read_mtl_json.sav
 
+Code: https://github.com/xiexjrs/ENVI_Read_MTL_json.git
+
 ## 工具介绍	
 1. 功能：
 	通过ENVI打开USGS发布的Landsat Collection2 Level 2 数据（已经过定标和大气校正）
 2. 测试/适用平台：
 	在ENVI5.3/IDL8.5上测试可用，通常适用于ENVI5.3及以上版本
 3. 测试/数据：
-	在USGS/aliyun AI Earth等平台下载的Landsat Collection2 Level 2数据（如LC08_L2SP_129044_20150104_20200910_02_T1.tar）
+	在USGS/aliyun AI Earth等平台下载的Landsat Collection2 Level2数据
+	（如LC08_L2SP_129044_20150104_20200910_02_T1.tar;LC09_L2SP_136044_20220217_20220225_02_T1.tar）
 
 ## 工具安装与使用
 1. 安装：
