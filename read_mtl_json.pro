@@ -39,7 +39,11 @@ pro Read_MTL_json
   View = e.GetView()
   DataColl = e.Data
   
-  jsonFile = Dialog_pickfile(/read,FILTER = ['*MTL.json'],$
+  ;设置默认输入文件路径
+  prefItem = e.Preferences['directories and files:input directory']
+  ENVIInputDir = prefItem.value
+  
+  jsonFile = Dialog_pickfile(/read,FILTER = ['*MTL.json'],PATH = ENVIInputDir,$
     TITLE = 'Select a Landsat _MTL.json metadata file')
   ;jsonFile='D:\Experiment\temp\LC08_C2L2\LC08_L2SP_129044_20150104_20200910_02_T1_MTL.json'
 
@@ -51,11 +55,9 @@ pro Read_MTL_json
   
   InputRaster = LCC2_Obj.load('Temperature')
   outRaster = LCC2_Obj.Scaling()
-  DataColl.add,outRaster
   ;Layer = View.CreateLayer(outRaster)
   
   InputRaster = LCC2_Obj.load('QA_Pixel')
   ;InputRaster = LCC2_Obj.load('ST_QA')
-  DataColl.add,InputRaster
 end
 ;
