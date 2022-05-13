@@ -75,18 +75,23 @@ Function LCC2::Load,dataset_name
   DataColl = e.Data
 
   ;; Load Multispectral Imagery (加载多光谱影像)
+  TiffRasters = !null
   if self.dataset_name eq 'Multispectral' then begin
     for i=0,6 do begin
       TiffFileName = FileDirName + Path_sep()$
         + self.landsat_product_id $
         + '_SR_B'+ strtrim(string(i+1),2)+ '.TIF'
-      TiffRaster = e.OpenRaster(TiffFileName)
+      TiffRasters = [TiffRasters,e.OpenRaster(TiffFileName)]
     endfor
-    ; LayerStacking (图层叠加)
-    DataItems = DataColl.Get()
-    SpatialRef=TiffRaster.SPATIALREF
-    InputRaster = ENVIMetaspectralRaster(DataItems)
-    DataColl.remove,DataItems
+
+  ;;----------  LayerStacking (图层叠加) ------------ 
+    ; 建立地理格网
+    grid = ENVIGridDefinition(TiffRasters[0])
+    SpatialRef=TiffRasters[0].SPATIALREF
+    InputRaster = ENVIMetaspectralRaster(TiffRasters,SPATIALREF=SPATIALREF)  
+    MSS_SpatialGridRaster = ENVISpatialGridRaster(InputRaster, $
+      GRID_DEFINITION=Grid)
+    DataColl.remove,TiffRasters
 
     ; Edit the ENVI header (设置多光谱文件属性)
     Metadata = InputRaster.Metadata
@@ -98,8 +103,6 @@ Function LCC2::Load,dataset_name
       self.Multispec_Meta.bandnames
     Metadata.Additem, 'date_acquired',self.DATE_ACQUIRED
     Metadata.Additem, 'scene_center_time', self.SCENE_CENTER_TIME
-
-    ;DataColl.add,InputRaster
   endif
 
   ;; Loading surface temperature images (加载地表温度影像)
@@ -111,7 +114,6 @@ Function LCC2::Load,dataset_name
     Metadata = InputRaster.Metadata
     Metadata.updateitem, 'band names', $
       self.TEMPERATURE_Meta.bandnames
-    DataColl.remove, InputRaster
   endif
 
   ;; Load quality images (加载QA质量影像)
@@ -119,19 +121,17 @@ Function LCC2::Load,dataset_name
     TiffFileName = FileDirName + Path_sep()$
       + self.landsat_product_id $
       + '_ST_QA.TIF'
-    InputRaster = e.OpenRaster(TiffFileName)
-    DataColl.remove, InputRaster
+    InputRaster = e.OpenRaster(TiffFileName)    
   endif
   if self.dataset_name eq 'QA_Pixel' then begin
     TiffFileName = FileDirName + Path_sep()$
       + self.landsat_product_id $
       + '_QA_PIXEL.TIF'
     InputRaster = e.OpenRaster(TiffFileName)
-    DataColl.remove, InputRaster
   endif
 
-  *self.InputRaster = InputRaster
-  return,InputRaster
+  *self.InputRaster = InputRaster 
+  return,InputRaster 
 end
 ;
 
