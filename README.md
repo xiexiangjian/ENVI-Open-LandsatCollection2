@@ -31,8 +31,7 @@ Code: https://github.com/xiexjrs/ENVI-Open-LandsatCollection2.git
 ## 工具更新说明
 ENVI_Read_MTL_json-v0.1 
 	This version only supports the reading of the L2SP level data from Landsat 08/09 OLI_TIRS.
-	该版本只支持Landsat_08/09 OLI_TIRS的“L2SP”级别数据的读取。
-
+	该版本只支持Landsat_08/09 OLI_TIRS的“L2SP”级别数据的读取。	
 ENVI-Open-LandsatCollection2-v0.2 
 	This version supports the reading of the L1TP/L2SP level data from Landsat TM/ETM/OLI_TIRS.
 	该版本同时支持Landsat_TM/ETM/OLI_TIRS的“L2SP”和“L1TP”级别数据的读取。
