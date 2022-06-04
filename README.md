@@ -4,7 +4,9 @@ A small plug-in developed based on ENVI5.3/IDL8.5 to open Landsat Collection 2 d
 # 工具中文说明
 开发背景：临近毕业，有不少同学咨询Landsat Collection2 Level 2 数据在ENVI中打不开的问题，为方便大家，编写并分享此工具。
 
-插件下载：https://github.com/xiexjrs/ENVI-Open-LandsatCollection2/blob/main/Open_LandsatC2.sav
+插件下载：
+	For ENVI5.3.1： https://github.com/xiexjrs/ENVI-Open-LandsatCollection2/blob/main/ENVI5.3.1-Open-LandsatCollection2.zip
+	For ENVI5.3： https://github.com/xiexjrs/ENVI-Open-LandsatCollection2/blob/main/ENVI5.3-Open-LandsatCollection2.zip
 
 Code: https://github.com/xiexjrs/ENVI-Open-LandsatCollection2.git
 
