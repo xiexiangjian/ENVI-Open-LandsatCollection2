@@ -2,7 +2,7 @@
 A small plug-in developed based on ENVI5.3/IDL8.5 to open Landsat Collection 2 data released by USGS
 
 # 工具中文说明
-开发背景：Landsat Collection2 Level 2 数据是USGS在2020年基于Level1的数据以及其他辅助数据制作为地表温度以及反射率数据产品向外提供，可用于时间序列的分析，可大大降低数据预处理的时间，可直接拿来用。每到大学最后一个学期，有不少毕业班同学咨询该数据在ENVI5.3中如何使用的问题，为方便大家，编写并分享此插件。
+开发背景：Landsat Collection2 Level 2 数据是USGS在2020年基于Level1的数据以及其他辅助数据制作为地表温度以及反射率数据产品向外提供，可直接用于定性分类、定量评估以及时间序列分析等遥感实践，减少了预处理辐射矫正环节，大大提高了处理效率。所以，每到大学最后一个学期，有不少毕业班同学咨询该数据在ENVI5.3中如何使用的问题，为方便大家，编写并分享此插件。
 
 ## 插件下载：
 
