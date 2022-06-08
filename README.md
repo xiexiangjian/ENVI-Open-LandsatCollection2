@@ -2,7 +2,7 @@
 A small plug-in developed based on ENVI5.3/IDL8.5 to open Landsat Collection 2 data released by USGS
 
 # 工具中文说明
-开发背景：临近毕业，有不少同学咨询Landsat Collection2 Level 2 数据在ENVI中打不开的问题，为方便大家，编写并分享此工具。
+开发背景：Landsat Collection2 Level 2 数据是USGS在2020年基于Level1的数据以及其他辅助数据制作为地表温度以及反射率数据产品向外提供，可用于时间序列的分析，可大大降低数据预处理的时间，可直接拿来用。每到大学最后一个学期，有不少毕业班同学咨询该数据在ENVI5.3中如何使用的问题，为方便大家，编写并分享此插件。
 
 ## 插件下载：
 
@@ -33,7 +33,7 @@ A small plug-in developed based on ENVI5.3/IDL8.5 to open Landsat Collection 2 d
 	
 	(2) 在弹出对话框中，选择数据目录下的_MTL.json文件（如LC08_L2SP_129044_20150104_20200910_02_T1_MTL.json）；
 	
-	(3) 如果没报错，工具自动加载缩放后的地表反射率影像集、地表温度影像和QA_Pixel质量影像。
+	(3) 如果没报错，工具自动加载Level 2缩放后的地表反射率影像集、地表温度影像和QA_Pixel质量影像或Level 1定标后的数据。
 	
 	(4) 如果报Json解析错误，请下载源码，在UTF-8编码格式下重新(编译调试无误后)构建项目，生成Open_LandsatC2.sav，并将其重新拷贝到相应目录。
 	
