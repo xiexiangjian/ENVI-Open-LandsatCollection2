@@ -19,11 +19,8 @@ Pro LandsatC2__define
     SENSOR_ID: "TM",$
     LANDSAT_PRODUCT_ID:'',$
     dataset_name:'Multispectral',$
-    Tiff_Names: Ptr_new(0),$
-    ST_Tiff_Names: Ptr_new(0),$
-    QA_Pixel_Names: Ptr_new(0),$
-    InputRaster: Ptr_new(0),$
-    Json_Meta: dictionary()}
+    InputRasters: Ptr_new(0),$
+    Json_Meta: ORDEREDHASH()}
 End
 ;
 
@@ -45,95 +42,111 @@ Function LandsatC2::init, MTLJsonFile
     MESSAGE, /IOERROR, "MTL.Json file is required for this function."
 
   ;;Load metadata information from MTL.Json file and initialize (加载元数据信息并初始化)
-  dict = JSON_PARSE(MTLJsonFile,/DICTIONARY)
-  product_contents = dict.landsat_metadata_file.product_contents
-  self.landsat_product_id = product_contents.landsat_product_id
-  self.processing_level = product_contents.processing_level  
-  image_attributes = dict.landsat_metadata_file.image_attributes  
-  self.SENSOR_ID = image_attributes.sensor_id
+  OrderHash = JSON_PARSE(MTLJsonFile)
+  product_contents = OrderHash['LANDSAT_METADATA_FILE','PRODUCT_CONTENTS']
+  self.landsat_product_id = product_contents['LANDSAT_PRODUCT_ID']
+  self.processing_level = product_contents['PROCESSING_LEVEL']
+  image_attributes = OrderHash['LANDSAT_METADATA_FILE','IMAGE_ATTRIBUTES']
+  SELF.SENSOR_ID = image_attributes['SENSOR_ID']
 
-  case self.SENSOR_ID of 
-;    'MSS': begin
-;      MS_BandNum = strtrim(string(indgen(4)+4),2)
-;      Band_Names = ['Green','Red', 'NIR1', 'NIR2']
-;      Wavelengths = [0.55,0.65,0.75,0.95]
-;      end
+  case self.SENSOR_ID of
+    ;    'MSS': begin
+    ;      MS_BandNum = strtrim(string(indgen(4)+4),2)
+    ;      Band_Names = ['Green','Red', 'NIR1', 'NIR2']
+    ;      Wavelengths = [0.55,0.65,0.75,0.95]
+    ;      end
     'TM': begin
-        MS_BandNum = strtrim(string([indgen(5)+1,7]),2)
-        ST_BandNum = ['6']
-        Band_Names = ['Blue','Green','Red','NIR','SWIR 1','SWIR 2']
-        Wavelengths = [0.485,0.565,0.655,0.865,1.655,2.205]
-      end
+      BandNum = indgen(7)
+      MS_BandNum = [indgen(5),6]
+      ST_BandNum = [5]
+      Band_Names = ['Blue','Green','Red','NIR','SWIR 1','TIR','SWIR 2']
+      Wavelengths = [0.485,0.565,0.655,0.865,1.655,11.435,2.205]
+    end
     'ETM':begin
-        MS_BandNum = strtrim(string([indgen(5)+1,7]),2)
-        ST_BandNum = ['6']
-        Band_Names = ['Blue','Green','Red','NIR','SWIR 1','SWIR 2']
-        Wavelengths = [0.485,0.565,0.655,0.865,1.655,2.205]
-      end
+      MS_BandNum = [indgen(5),6]
+      ST_BandNum = [5]
+      BandNum = indgen(8)
+      Band_Names = ['Blue','Green','Red','NIR','SWIR 1','TIR','SWIR 2','Panchromatic']
+      Wavelengths = [0.485,0.565,0.655,0.865,1.655,11.435,2.205,0.750]
+    end
     'OLI_TIRS': begin
-        MS_BandNum = strtrim(string(indgen(7)+1),2)
-        ST_BandNum = ['10','11']
-        Band_Names = ['Coastal aerosol','Blue',$
-          'Green','Red', 'NIR', 'SWIR 1','SWIR 2']
-        Wavelengths = [0.4430,0.4826,0.5613,0.6546,0.8646,1.6090,2.2010]
-      end
-    ELSE: print,'ERROR: MSS data is not supported' 
-  endcase  
-  
-  level1_parameters = dict.landsat_metadata_file.level1_radiometric_rescaling  
-  keys = ['Band_Names','Wavelengths','Radiance_Gains',$
-    'Radiance_Offsets','Reflectance_Gains','Reflectance_Offsets',$
-    'Cloud_Cover','Sun_Azimuth','Sun_Elevation','Earth_Sun_Distance',$
+      MS_BandNum = indgen(7)
+      ST_BandNum = [9,10]
+      BandNum = indgen(11)
+      Band_Names = ['Coastal aerosol','Blue','Green','Red', 'NIR',$
+        'SWIR 1','SWIR 2','Panchromatic','Cirrus','TIR1','TIR2']
+      Wavelengths = [0.4430,0.4826,0.5613,0.6546,0.8646,1.6090,2.2010,0.5917,1.373,10.9,12.0]
+    end
+    ELSE: print,'ERROR: MSS data is not supported'
+  endcase
+
+  keys = ['Cloud_Cover','Sun_Azimuth','Sun_Elevation','Earth_Sun_Distance',$
     'Spacecraft','Sensor_Type','Date_Acquired','Scene_Center_Time']
+  values = LIST(image_attributes['CLOUD_COVER'],image_attributes['SUN_AZIMUTH'],$
+    image_attributes['SUN_ELEVATION'],image_attributes['EARTH_SUN_DISTANCE'],$
+    image_attributes['SPACECRAFT_ID'],image_attributes['SENSOR_ID'],$
+    image_attributes['DATE_ACQUIRED'],image_attributes['SCENE_CENTER_TIME'])
 
-  values = LIST(Band_Names, Wavelengths,$
-    level1_parameters['RADIANCE_MULT_BAND_' + MS_BandNum].values(),$
-    level1_parameters['RADIANCE_ADD_BAND_' + MS_BandNum].values(),$
-    level1_parameters['REFLECTANCE_MULT_BAND_' + MS_BandNum].values(),$
-    level1_parameters['REFLECTANCE_ADD_BAND_' + MS_BandNum].values(),$
-    image_attributes.cloud_cover,image_attributes.sun_azimuth,$
-    image_attributes.sun_elevation,image_attributes.earth_sun_distance,$
-    image_attributes.spacecraft_id,image_attributes.sensor_id,$
-    image_attributes.date_acquired,image_attributes.scene_center_time)
+  self.Json_Meta = ORDEREDHASH(keys, values)
 
-  MsDict = DICTIONARY(keys, values)
-  
-  ;; 根据不同级别的输入数据，分别获取影像波段文件及其Scaling参数 
-  self.Tiff_Names = Ptr_new(0) 
-  self.ST_Tiff_Names = Ptr_new(0)
-  self.QA_Pixel_Names = Ptr_new(0)
- 
+  BandNum_str = strtrim(string(BandNum+1),2)
+  MS_BandNum_str = strtrim(string(MS_BandNum+1),2)
+  ST_BandNum_str = strtrim(string(ST_BandNum+1),2)
+
+  ;; 根据不同级别的输入数据，分别获取影像波段文件及其Scaling参数
   if self.processing_level eq 'L2SP' then begin
     ; 输入数据为'L2SP'级别时
-    *self.Tiff_Names = self.landsat_product_id + '_SR_B'+ MS_BandNum +'.TIF'
-    *self.ST_Tiff_Names = self.landsat_product_id + '_ST_B'+ ST_BandNum[0] +'.TIF'
-    *self.QA_Pixel_Names = self.landsat_product_id + ['_ST_QA', '_QA_PIXEL']+'.TIF'
-    
-    level2_SR_parameters = dict.landsat_metadata_file.level2_surface_reflectance_parameters
-    SR_MULT = level2_SR_parameters['REFLECTANCE_MULT_BAND_' + MS_BandNum].values()
-    SR_ADD = level2_SR_parameters['REFLECTANCE_ADD_BAND_' + MS_BandNum].values()
-    keys = ['SR_MULT','SR_ADD','ST_reScaling']
-    values = LIST(SR_MULT,SR_ADD,[0.00341802,149.0-273])    
-  endif else begin
-    if self.processing_level eq 'L1TP' then begin
-      ; 输入数据为'L1TP'级别时
-      *self.Tiff_Names = self.landsat_product_id + '_B'+ MS_BandNum +'.TIF'
-      *self.ST_Tiff_Names = self.landsat_product_id + '_B'+ ST_BandNum +'.TIF' 
-      *self.QA_Pixel_Names = self.landsat_product_id + ['_QA_RADSAT', '_QA_PIXEL']+'.TIF'
+    keys = ['Band_Names','Wavelengths','Radiance_Gains','Radiance_Offsets',$
+      'Tiff_Names','MS_Bands','ST_Bands']
 
-      Rad_TC_MULT = level1_parameters['RADIANCE_MULT_BAND_' + ST_BandNum].values()
-      Rad_TC_ADD = level1_parameters['RADIANCE_ADD_BAND_' + ST_BandNum].values()     
-      level1_TC = dict.landsat_metadata_file.level1_thermal_constants      
-      K1_constant = level1_TC['K1_CONSTANT_BAND_' + ST_BandNum].values()
-      K2_constant = level1_TC['K2_CONSTANT_BAND_' + ST_BandNum].values()      
-      keys = ['Rad_TC_MULT','Rad_TC_ADD','TC_MULT','TC_ADD']
-      values = LIST(Rad_TC_MULT,Rad_TC_ADD,K1_constant,K2_constant)  
-    endif else PRINT, 'Error opening'
-  endelse 
-  self.Json_Meta = MsDict + DICTIONARY(keys, values)
-  
-  self.InputRaster = Ptr_new(0)
- 
+    ST_BandNum = ST_BandNum[0]
+    BandNum = [MS_BandNum,ST_BandNum]
+    Band_Names = Band_Names[BandNum]
+    Wavelengths = Wavelengths[BandNum]
+
+    level2_SR_parameters = OrderHash['LANDSAT_METADATA_FILE','LEVEL2_SURFACE_REFLECTANCE_PARAMETERS']
+    SR_MULT_OrderHash = level2_SR_parameters['REFLECTANCE_MULT_BAND_' + MS_BandNum_str]
+    SR_MULT = (SR_MULT_OrderHash.values()).ToArray(TYPE=4)
+    SR_ADD_OrderHash = level2_SR_parameters['REFLECTANCE_ADD_BAND_' + MS_BandNum_str]
+    SR_ADD = (SR_ADD_OrderHash.values()).ToArray(TYPE=4)
+    level2_Rad_Mult = [SR_MULT,0.00341802]
+    level2_Rad_Add = [SR_ADD,149.0-273]
+
+    ST_BandNum_str = 'ST_B'+ strtrim(string(ST_BandNum+1),2)
+    Tiff_Names = (product_contents['FILE_NAME_BAND_' + $
+      [MS_BandNum_str,ST_BandNum_str]].values()).ToArray()
+
+    MS_BandNum = indgen(N_ELEMENTS(MS_BandNum))
+    ST_BandNum = N_ELEMENTS(Tiff_Names)-1
+
+    values = LIST(Band_Names, Wavelengths,level2_Rad_Mult,$
+      level2_Rad_Add,Tiff_Names,MS_BandNum,ST_BandNum)
+
+  endif else if self.processing_level eq 'L1TP' then begin
+    ; 输入数据为'L1TP'级别时
+    keys = ['Band_Names','Wavelengths','Radiance_Gains','Radiance_Offsets',$
+      'Tiff_Names','MS_Bands','ST_Bands','K1_constant','K2_constant']
+
+    level1_Rad = OrderHash['LANDSAT_METADATA_FILE','LEVEL1_RADIOMETRIC_RESCALING']
+    level1_TC = OrderHash['LANDSAT_METADATA_FILE','LEVEL1_THERMAL_CONSTANTS']
+    level1_Rad_Mult = (level1_Rad['RADIANCE_MULT_BAND_' + BandNum_str].values()).ToArray(TYPE=4)
+    level1_Rad_Add = (level1_Rad['RADIANCE_ADD_BAND_' + BandNum_str].values()).ToArray(TYPE=4)
+    level1_TC_K1 = (level1_TC['K1_CONSTANT_BAND_' + ST_BandNum_str].values()).ToArray(TYPE=4)
+    level1_TC_K2 = (level1_TC['K2_CONSTANT_BAND_' + ST_BandNum_str].values()).ToArray(TYPE=4)
+    Tiff_Names =  (product_contents['FILE_NAME_BAND_'+ BandNum_str].values()).ToArray()
+
+    values = LIST(Band_Names, Wavelengths,level1_Rad_Mult,level1_Rad_Add,$
+      Tiff_Names,MS_BandNum,ST_BandNum,level1_TC_K1,level1_TC_K2)
+
+  endif else begin
+    print,'请选择Landsat Collection 2 L1TP或 L2SP 产品数据' 
+    Return,0
+  endelse
+
+  self.Json_Meta = self.Json_Meta + ORDEREDHASH(keys, values)
+
+  self.InputRasters = Ptr_new(0)
+
   Return,1b
 End
 ;
@@ -147,52 +160,81 @@ End
 ;    LandsatC2::Load
 ; :args:
 ;   dataset_name : Specify the open image data variable
-;   
+;
 ;-
-Function LandsatC2::Load,dataset_name
+Function LandsatC2::Load,MsRaster = MsRaster,TirRaster = TirRaster,$
+  PanRaster = PanRaster,QA_Pixel_Raster = QA_Pixel_Raster
   compile_opt IDL2
 
-  ;;加载指定数据集合
-  If N_elements(dataset_name) Gt 0 Then Begin
-    self.dataset_name = dataset_name
-  Endif Else self.dataset_name = 'Multispectral'
+  ;  ;;加载指定数据集合
+  ;  If N_elements(dataset_name) Gt 0 Then Begin
+  ;    self.dataset_name = dataset_name
+  ;  Endif Else self.dataset_name = 'Multispectral'
 
   e = envi(/current)
   FileDirName = File_dirname(self.MTLJsonFile)
   DataColl = e.Data
+  OutputRasters = !null
 
-  if self.dataset_name eq 'Multispectral' then begin
-    Tiff_Names = *self.Tiff_Names    
-    InputRaster = load_tiff(Tiff_Names,FileDirName)
-    
-    ; Edit the ENVI header (设置多光谱文件属性)
-    Metadata = InputRaster.Metadata
+  ;;读取多光谱数据
+  Bands_num = self.Json_Meta['MS_Bands']
+  Tiff_Names = (self.Json_Meta['Tiff_Names'])[Bands_num]
+  MsRaster = load_tiff(Tiff_Names,FileDirName)
+  ; Edit the ENVI header (设置头文件)
+  Metadata = MsRaster.Metadata
+  Metadata.AddItem, 'wavelength units','micrometers'
+  Metadata.updateitem, 'band names',(self.Json_Meta['Band_Names'])[Bands_num]
+  Metadata.Additem, 'wavelength',(self.Json_Meta['Wavelengths'])[Bands_num]
+  Metadata.Additem, 'data gain values',(self.Json_Meta['Radiance_Gains'])[Bands_num]
+  Metadata.Additem, 'data offset values',(self.Json_Meta['Radiance_Offsets'])[Bands_num]
+  Metadata.Additem, 'Cloud Cover',self.Json_Meta['Cloud_Cover']
+  Metadata.Additem, 'Sun Azimuth', self.Json_Meta['Sun_Azimuth']
+  Metadata.Additem, 'Sun Elevation', self.Json_Meta['Sun_Elevation']
+  Metadata.Additem, 'Earth Sun Distance', self.Json_Meta['Earth_Sun_Distance']
+  Metadata.Additem, 'Spacecraft', self.Json_Meta['Spacecraft']
+  Metadata.Additem, 'Sensor Type', self.Json_Meta['Sensor_Type']
+  Metadata.Additem, 'Date Acquired', self.Json_Meta['Date_Acquired']
+  Metadata.Additem, 'Scene Center Time', self.Json_Meta['Scene_Center_Time']
+
+  ;;读取热红外数据
+  Bands_num = self.Json_Meta['ST_Bands']
+  Tiff_Names = (self.Json_Meta['Tiff_Names'])[Bands_num]
+  TirRaster = load_tiff(Tiff_Names,FileDirName)
+  ; Edit the ENVI header (设置头文件)
+  Metadata = TirRaster.Metadata
+  Metadata.AddItem, 'wavelength units','micrometers'
+  Metadata.updateitem, 'band names',(self.Json_Meta['Band_Names'])[Bands_num]
+  Metadata.Additem, 'wavelength',(self.Json_Meta['Wavelengths'])[Bands_num]
+  Metadata.Additem, 'data gain values',(self.Json_Meta['Radiance_Gains'])[Bands_num]
+  Metadata.Additem, 'data offset values',(self.Json_Meta['Radiance_Offsets'])[Bands_num]
+
+  ;;读取Qa_Pixel数据
+  Tiff_Name = self.landsat_product_id + ['_QA_PIXEL']+'.TIF'
+  TiffFileName = FileDirName + Path_sep()+ Tiff_Name
+  QA_Pixel_Raster = e.OpenRaster(TiffFileName)
+
+  OutputRasters = [MsRaster,TirRaster,QA_Pixel_Raster]
+  ;;读取全色影像数据
+  if SELF.SENSOR_ID ne 'TM' and self.processing_level eq 'L1TP' then begin
+    Bands_num = 7
+    Tiff_Names = (self.Json_Meta['Tiff_Names'])[Bands_num]
+    PanRaster = load_tiff(Tiff_Names,FileDirName)
+    ; Edit the ENVI header (设置头文件)
+    Metadata = PanRaster.Metadata
     Metadata.AddItem, 'wavelength units','micrometers'
-    Metadata.AddItem, 'wavelength',self.Json_Meta['Wavelengths']
-    Metadata.updateitem, 'band names',self.Json_Meta['Band_Names']
-    Metadata.Additem, 'Cloud Cover',self.Json_Meta['Cloud_Cover']
-    Metadata.Additem, 'Sun Azimuth', self.Json_Meta['Sun_Azimuth']
-    Metadata.Additem, 'Sun Elevation', self.Json_Meta['Sun_Elevation']
-    Metadata.Additem, 'Earth Sun Distance', self.Json_Meta['Earth_Sun_Distance']
-    Metadata.Additem, 'Spacecraft', self.Json_Meta['Spacecraft']
-    Metadata.Additem, 'Sensor Type', self.Json_Meta['Sensor_Type']
-    Metadata.Additem, 'Date Acquired', self.Json_Meta['Date_Acquired']
-    Metadata.Additem, 'Scene Center Time', self.Json_Meta['Scene_Center_Time']
+    Metadata.updateitem, 'band names',(self.Json_Meta['Band_Names'])[Bands_num]
+    Metadata.Additem, 'wavelength',(self.Json_Meta['Wavelengths'])[Bands_num]
+    Metadata.Additem, 'data gain values',(self.Json_Meta['Radiance_Gains'])[Bands_num]
+    Metadata.Additem, 'data offset values',(self.Json_Meta['Radiance_Offsets'])[Bands_num]
 
-  endif else begin
-    ;; Loading surface temperature images (加载地表温度影像)
-    if self.dataset_name eq 'Temperature' then $
-      Tiff_Names = *self.ST_Tiff_Names
-    if self.dataset_name eq 'QA_Pixel' then $
-      Tiff_Names = *self.QA_Pixel_Names
-    
-    InputRaster = load_tiff(Tiff_Names,FileDirName)
-    Metadata = InputRaster.Metadata
-    Metadata.updateitem, 'band names',Tiff_Names
-  endelse
+    OutputRasters = [OutputRasters,PanRaster]
+  endif
 
-  *self.InputRaster = InputRaster
-  return,*self.InputRaster
+  ;DataColl.add,OutputRasters
+
+  *self.InputRasters = OutputRasters
+
+  return,*self.InputRasters
 end
 ;
 
@@ -209,7 +251,7 @@ end
 function load_tiff,Tiff_Names,FileDirName
   compile_opt IDL2
 
-  e = envi(/current)  
+  e = envi(/current)
   DataColl = e.Data
 
   ;;----------  Load Imagery (加载影像) ------------
@@ -221,12 +263,9 @@ function load_tiff,Tiff_Names,FileDirName
   endfor
 
   ;;----------  LayerStacking (图层叠加) ------------
-  ; 建立地理格网
-  grid = ENVIGridDefinition(TiffRasters[0])
+  ; 设置投影
   SpatialRef=TiffRasters[0].SPATIALREF
   InputRaster = ENVIMetaspectralRaster(TiffRasters,SPATIALREF=SPATIALREF)
-  MSS_SpatialGridRaster = ENVISpatialGridRaster(InputRaster, $
-    GRID_DEFINITION=Grid)
   DataColl.remove,TiffRasters
 
   return,InputRaster
@@ -247,41 +286,28 @@ end
 ;   outFile : a output raster file
 ;-
 ;;
-Function LandsatC2::Scaling,outFile=outFile
+Function LandsatC2::Scaling, outTirRaster = outTirRaster,$
+  outPanRaster = outPanRaster
+
   compile_opt IDL2
-  
-  if self.processing_level eq 'L2SP' then begin
-    ; Specify the gains and offsets
-    if self.dataset_name eq 'Multispectral' then begin
-      Gains = self.Json_Meta['SR_MULT'].ToArray(TYPE=4)
-      Offsets = self.Json_Meta['SR_ADD'].ToArray(TYPE=4)
-    endif
+  e = envi(/current)
 
-    if self.dataset_name eq 'Temperature' then begin
-      scale = self.Json_Meta['ST_reScaling']
-      Gains = [scale[0]]
-      Offsets = [scale[1]]
-    endif
-    
-  endif else if self.processing_level eq 'L1TP' then begin
-    ; Specify the gains and offsets
-    if self.dataset_name eq 'Multispectral' then begin
-      Gains = self.Json_Meta['Radiance_Gains'].ToArray(TYPE=4)
-      Offsets = self.Json_Meta['Radiance_Offsets'].ToArray(TYPE=4)
-    endif
+  Gains = [(self.Json_Meta['Radiance_Gains'])[self.Json_Meta['MS_Bands']]]
+  Offsets = [(self.Json_Meta['Radiance_Offsets'])[self.Json_Meta['MS_Bands']]]
+  outMsRaster = ENVIGainOffsetRaster((*self.InputRasters)[0], Gains, Offsets)
 
-    if self.dataset_name eq 'Temperature' then begin
-      Gains = self.Json_Meta['Rad_TC_MULT'].ToArray(TYPE=4)
-      Offsets = self.Json_Meta['Rad_TC_ADD'].ToArray(TYPE=4)
-    endif
+  Gains = [(self.Json_Meta['Radiance_Gains'])[self.Json_Meta['ST_Bands']]]
+  Offsets = [(self.Json_Meta['Radiance_Offsets'])[self.Json_Meta['ST_Bands']]]
+  outTirRaster = ENVIGainOffsetRaster((*self.InputRasters)[1], Gains, Offsets)
+
+  ;;读取全色影像数据
+  if SELF.SENSOR_ID ne 'TM' and self.processing_level eq 'L1TP' then begin
+    Gains = [(self.Json_Meta['Radiance_Gains'])[7]]
+    Offsets = [(self.Json_Meta['Radiance_Offsets'])[7]]
+    outPanRaster = ENVIGainOffsetRaster((*self.InputRasters)[2], Gains, Offsets)
   endif
-  
-  outRaster = ENVIGainOffsetRaster(*self.InputRaster, Gains, Offsets)
-  
-  If N_elements(outFile) Gt 0 Then Begin
-    outRaster.Export, outFile, 'ENVI'
-  Endif
-  return,outRaster
+
+  return,outMsRaster
 end
 
 Pro LandsatC2::Cleanup
