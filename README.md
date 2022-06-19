@@ -6,7 +6,7 @@ A small plug-in developed based on ENVI5.3.1/IDL8.5.1 to open Landsat Collection
 
 ## 插件下载：
 
-  For ENVI5.3.1+： https://github.com/xiexjrs/ENVI-Open-LandsatCollection2/blob/main/ENVI5.3.1-Open-LandsatCollection2.zip
+  For ENVI5.3.1+： https://github.com/xiexjrs/ENVI-Open-LandsatCollection2/blob/main/Open_LandsatC2.sav
 	
   For ENVI5.3： https://github.com/xiexjrs/ENVI-Open-LandsatCollection2/blob/main/ENVI5.3-Open-LandsatCollection2.zip
 
@@ -25,7 +25,7 @@ A small plug-in developed based on ENVI5.3.1/IDL8.5.1 to open Landsat Collection
 
 ## 工具安装与使用
 1. 安装：
-	将压缩包中的Open_LandsatC2.sav文件拷贝到ENVI安装目录下extensions文件夹中即可。
+	将压缩包中的Open_LandsatC2.sav文件拷贝到ENVI指定扩展目录下extensions文件夹中即可。
 	
 2. 使用：
 	
