@@ -1,3 +1,17 @@
+;+
+; ;;-------------------------------------------------------------------
+; You may copy, distribute and modify Open-LandsatCollection2 under the terms of the GNU
+; GENERAL PUBLIC LICENSE Version 2, or any later version.
+;
+; ; :Description:
+;    Describe the procedure.
+;     A small plug-in developed based on ENVI5.3/IDL8.5
+;     to open Landsat Collection 2 data released by USGS
+;
+; :EnCoding: UTF-8
+; :Author: xie
+; :Email: xiexj@ecut.edu.cn
+;-
 
 ;---------------------------------
 ;+
@@ -5,8 +19,6 @@
 ;    Describe the procedure.
 ;     Defining a IDL Object Classe named LandsatC2
 ;     (定义LandsatC2类，用于根据_MTL.json文件读取Landsat Collection2 Level2数据;)
-; :Author: xie
-;   Email: xiexj@ecut.edu.cn
 ;-
 Pro LandsatC2__define
   compile_opt IDL2
@@ -109,8 +121,15 @@ Function LandsatC2::init, MTLJsonFile
     SR_MULT = (SR_MULT_OrderHash.values()).ToArray(TYPE=4)
     SR_ADD_OrderHash = level2_SR_parameters['REFLECTANCE_ADD_BAND_' + MS_BandNum_str]
     SR_ADD = (SR_ADD_OrderHash.values()).ToArray(TYPE=4)
-    level2_Rad_Mult = [SR_MULT,0.00341802]
-    level2_Rad_Add = [SR_ADD,149.0-273]
+    
+    level2_ST_parameters = OrderHash['LANDSAT_METADATA_FILE','LEVEL2_SURFACE_TEMPERATURE_PARAMETERS']
+    ST_MULT_OrderHash = level2_ST_parameters['TEMPERATURE_MULT_BAND_ST_B' + ST_BandNum_str[0]]
+    ST_MULT = float(ST_MULT_OrderHash)
+    ST_ADD_OrderHash = level2_ST_parameters['TEMPERATURE_ADD_BAND_ST_B' + ST_BandNum_str[0]]
+    ST_ADD =  float(ST_ADD_OrderHash)
+       
+    level2_Rad_Mult = [SR_MULT,ST_MULT]
+    level2_Rad_Add = [SR_ADD,ST_ADD]
 
     ST_BandNum_str = 'ST_B'+ strtrim(string(ST_BandNum+1),2)
     Tiff_Names = (product_contents['FILE_NAME_BAND_' + $
@@ -209,7 +228,7 @@ Function LandsatC2::Load,MsRaster = MsRaster,TirRaster = TirRaster,$
   Metadata.Additem, 'data offset values',(self.Json_Meta['Radiance_Offsets'])[Bands_num]
 
   ;;读取Qa_Pixel数据
-  Tiff_Name = self.landsat_product_id + ['_QA_PIXEL']+'.TIF'
+  Tiff_Name = self.landsat_product_id + '_QA_PIXEL.TIF'
   TiffFileName = FileDirName + Path_sep()+ Tiff_Name
   QA_Pixel_Raster = e.OpenRaster(TiffFileName)
 

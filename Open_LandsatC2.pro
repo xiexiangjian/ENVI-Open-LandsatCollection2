@@ -1,3 +1,18 @@
+;+
+; ;;-------------------------------------------------------------------
+; You may copy, distribute and modify Open-LandsatCollection2 under the terms of the GNU
+; GENERAL PUBLIC LICENSE Version 2, or any later version.
+;
+; ; :Description:
+;    Describe the procedure.
+;     A small plug-in developed based on ENVI5.3/IDL8.5
+;     to open Landsat Collection 2 data released by USGS
+;
+; :Author: xie
+; :EnCoding: UTF-8
+;-
+
+; ENVI Extension code. Called when the toolbox item is chosen.
 ; Add the extension to the toolbox. Called automatically on ENVI startup.
 pro Open_LandsatC2_extensions_init
 
@@ -11,7 +26,6 @@ pro Open_LandsatC2_extensions_init
   e.AddExtension, 'Open Landsat Collection 2', 'Open_LandsatC2', PATH=''
 end
 
-; ENVI Extension code. Called when the toolbox item is chosen.
 pro Open_LandsatC2
 
   ; Set compile options
